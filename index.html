@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Robot Manipulator Datasets — Built From Scratch</title>
+<meta name="description" content="An original from-scratch build: datasets captured from a six-axis robot arm and its digital twin — how the data is collected, what's inside the CSV files, and what you can train on it." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --accent:#4f46e5; --accent-soft:#ecebfb; --ink:#16201f; --muted:#5d6b69;
+    --line:#dfe5e3; --bg:#fbfcfb; --card:#ffffff;
+    --serif:'Fraunces',Georgia,serif; --sans:'Inter',system-ui,sans-serif; --mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.65;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:860px;margin:0 auto;padding:0 28px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{font-family:var(--mono);font-size:.86em;background:var(--accent-soft);padding:.1em .4em;border-radius:4px;color:#3b32c4}
+  h1,h2,h3{font-family:var(--serif);font-weight:500;line-height:1.15;letter-spacing:-.01em}
+  /* Header */
+  header.hero{padding:88px 0 56px;border-bottom:1px solid var(--line)}
+  .eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin:0 0 22px}
+  h1{font-size:clamp(2.6rem,6vw,4.1rem);margin:0 0 18px}
+  .lede{font-size:1.22rem;color:var(--muted);max-width:62ch;margin:0 0 28px}
+  .meta{display:flex;flex-wrap:wrap;gap:10px;font-size:.82rem}
+  .chip{font-family:var(--mono);font-size:.72rem;letter-spacing:.04em;border:1px solid var(--line);border-radius:999px;padding:5px 12px;color:var(--muted);background:var(--card)}
+  /* Sections */
+  section{padding:54px 0;border-bottom:1px solid var(--line)}
+  .kicker{font-family:var(--mono);font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:0 0 14px}
+  h2{font-size:clamp(1.7rem,3.4vw,2.3rem);margin:0 0 20px}
+  h3{font-size:1.2rem;margin:0 0 6px}
+  p{margin:0 0 18px;max-width:68ch}
+  .muted{color:var(--muted)}
+  /* Stack grid */
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:8px}
+  .tool{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+  .tool .t{font-family:var(--mono);font-size:.78rem;color:var(--accent);letter-spacing:.04em;margin-bottom:8px}
+  .tool h3{font-size:1.05rem;font-family:var(--sans);font-weight:600;margin-bottom:6px}
+  .tool p{font-size:.92rem;color:var(--muted);margin:0}
+  /* Pipeline / modules */
+  ol.flow{counter-reset:s;list-style:none;padding:0;margin:24px 0 0}
+  ol.flow li{position:relative;padding:18px 0 18px 56px;border-top:1px solid var(--line)}
+  ol.flow li:before{counter-increment:s;content:counter(s,decimal-leading-zero);position:absolute;left:0;top:18px;font-family:var(--mono);font-size:.8rem;color:var(--accent);border:1px solid var(--line);border-radius:8px;width:38px;height:38px;display:grid;place-items:center;background:var(--card)}
+  ol.flow li h3{font-family:var(--sans);font-size:1.02rem;font-weight:600;margin:0 0 4px}
+  ol.flow li p{margin:0;font-size:.93rem;color:var(--muted)}
+  .tag{display:inline-block;font-family:var(--mono);font-size:.68rem;padding:2px 7px;border-radius:5px;margin-left:8px;vertical-align:middle}
+  .tag.on{background:#e6f7ec;color:#1c7a43}
+  .tag.off{background:#fdecea;color:#b23b2c}
+  /* Callout */
+  .callout{background:var(--accent-soft);border:1px solid #d6d3f7;border-radius:14px;padding:24px 26px;margin-top:8px}
+  .callout p:last-child{margin:0}
+  /* Reflection list */
+  ul.learn{list-style:none;padding:0;margin:8px 0 0}
+  ul.learn li{padding:14px 0 14px 30px;border-top:1px solid var(--line);position:relative;color:var(--muted);max-width:68ch}
+  ul.learn li:before{content:"→";position:absolute;left:0;color:var(--accent);font-family:var(--mono)}
+  ul.learn li b{color:var(--ink);font-weight:600}
+  /* Footer */
+  footer{padding:48px 0 80px}
+  .credit{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px}
+  .credit .k{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  footer .fine{font-size:.8rem;color:var(--muted);margin-top:22px;text-align:center}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">From-Scratch Build · Robotics Data</p>
+    <h1>Robot Manipulator Datasets</h1>
+    <p class="lede">Two datasets captured from a six-axis robot arm and its software twin — one watching the system scale up under load, one recording the arm repeating four motions. Rebuilt from scratch to understand how robotics data is collected, formatted and used.</p>
+    <div class="meta">
+      <span class="chip">6-axis arm</span><span class="chip">Digital twin</span><span class="chip">CSV time-series</span>
+      <span class="chip">Labelled data</span><span class="chip">ML-ready</span>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <p class="kicker">What it is</p>
+    <h2>Data from a robot that copies itself</h2>
+    <p>The subject is a small <b>six-axis robot manipulator</b> — an arm with six joints — paired with a <b>digital twin</b>, a live software copy of that arm running on a server. As the real arm moves, the twin mirrors it, and the system records what's happening: how loaded the machines are, how the network behaves, how long each instance takes to respond. Those recordings are the datasets.</p>
+    <p>I built this to learn the unglamorous but essential half of robotics and machine learning: the data. Not the model, not the robot — the columns in a CSV file, the sampling intervals, the labels, and the decisions behind them that decide whether anything you train later is any good.</p>
+    <div class="callout">
+      <p><b>The core idea I wanted to learn:</b> a dataset is a designed artefact, not a byproduct. Choosing what to sample, how often, and how to label it is the real work — and it's what turns raw robot telemetry into something a classifier can actually learn from.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="kicker">The stack</p>
+    <h2>What the data is made of</h2>
+    <p class="muted">Two datasets, captured two different ways. Here is what each piece actually is.</p>
+    <div class="grid">
+      <div class="tool"><div class="t">subject</div><h3>Six-axis arm</h3><p>A compact desktop manipulator with six rotational joints. Its geometry is described by a robot model file, so the twin and any viewer know exactly how the arm is shaped.</p></div>
+      <div class="tool"><div class="t">source</div><h3>Digital twin</h3><p>A software replica of the arm running on edge infrastructure. The datasets are telemetry from this twin and the system hosting it, not raw video of the hardware.</p></div>
+      <div class="tool"><div class="t">dataset A</div><h3>Scalability traces</h3><p>The system is pushed harder over time by adding a new virtual robot instance at a fixed interval. The data records how resource use and timing respond as load climbs.</p></div>
+      <div class="tool"><div class="t">dataset B</div><h3>Motion traces</h3><p>The arm performs four distinct movements, each repeated twenty times. One CSV per movement captures the resulting time-series — clean, repeatable, comparable.</p></div>
+      <div class="tool"><div class="t">format</div><h3>CSV time-series</h3><p>Everything is plain comma-separated values: rows over time, columns of measurements. Portable, diff-able, and openable in anything from a spreadsheet to pandas.</p></div>
+      <div class="tool"><div class="t">labels</div><h3>Labelled variant</h3><p>The largest scalability file ships in a labelled version, with each row tagged so it can directly train a supervised classifier such as a random forest.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="kicker">Architecture</p>
+    <h2>How the data is organised</h2>
+    <p>The two datasets are kept separate because they answer different questions. The scalability set comes in three resolutions; the motion set is split by movement.</p>
+    <ol class="flow">
+      <li><h3>Micro sampling <span class="tag on">live</span></h3><p>Scalability dataset where a new robot instance is added every 60 seconds — the fine-grained view, lots of detail over a short window.</p></li>
+      <li><h3>Small sampling <span class="tag on">live</span></h3><p>Same experiment, a new instance every 300 seconds — a middle resolution that trades detail for a longer, calmer trace.</p></li>
+      <li><h3>Big sampling <span class="tag on">live</span></h3><p>A new instance every 3600 seconds — the coarse, long-horizon view of how the system scales over hours.</p></li>
+      <li><h3>Labelled big set <span class="tag on">live</span></h3><p>The big dataset with per-row labels added, ready to train and evaluate a supervised classifier.</p></li>
+      <li><h3>Motion CSVs <span class="tag on">live</span></h3><p>Four files, one per movement, each capturing the arm repeating that motion twenty times alongside a reference clip and the robot model.</p></li>
+      <li><h3>Generation script <span class="tag on">live</span></h3><p>A small Python script that produced the scalability traces — the reproducible recipe behind the numbers, not a hand-edited file.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="kicker">How it's used</p>
+    <h2>From CSV to a trained model</h2>
+    <p>A dataset is only as useful as what you can do with it. These two were shaped with concrete uses in mind:</p>
+    <ul class="learn">
+      <li><b>Scaling decisions:</b> the scalability traces show how a digital-twin service behaves as demand grows, which is exactly what you need to decide when to add or remove capacity.</li>
+      <li><b>Supervised classification:</b> the labelled big set drops straight into a training pipeline — split it, fit a random-forest classifier, and predict the system's state from its telemetry.</li>
+      <li><b>Motion comparison:</b> four repeated movements give a clean baseline for telling actions apart, or for measuring how consistently the twin reproduces the real arm.</li>
+    </ul>
+    <p class="muted" style="margin-top:18px">In my rebuild I focused on the data-handling path: load the CSVs, understand each column, line the three sampling resolutions up against each other, and confirm the labelled set really is ready to train on without further cleaning.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="kicker">Reflection</p>
+    <h2>What rebuilding it taught me</h2>
+    <ul class="learn">
+      <li><b>Sampling interval is a design knob.</b> Micro, small and big aren't three datasets — they're the same experiment seen at three zoom levels, and the choice changes what you can learn from it.</li>
+      <li><b>Labels are the expensive part.</b> The raw trace is easy to capture; deciding what each row <i>means</i> and tagging it is the work that makes supervised learning possible.</li>
+      <li><b>CSV is underrated.</b> No exotic format, no binary blob — plain rows and columns travel everywhere and stay readable years later. Boring is a feature.</li>
+      <li><b>Reproducibility lives in the script.</b> Shipping the generator alongside the data means the numbers aren't a mystery — anyone can see exactly how they were produced.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="credit">
+      <div class="k">About this build</div>
+      <p style="margin:0">An original, from-scratch build by <b>Andrea</b> — written to learn how robotics datasets are collected from a manipulator and its digital twin, how they're formatted, and what you can train on them. Plain HTML/CSS, deployed on GitHub Pages.</p>
+    </div>
+    <p class="fine">Built from scratch by Andrea · one of an ongoing series of learning builds.</p>
+  </div>
+</footer>
+</body>
+</html>
